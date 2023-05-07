@@ -4,13 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "*"
-scipy = "*"
-scikit-learn = "*"
-six = "*"
-pygad = "*"
-alive-progress = "*"
-matplotlib = "*"
+plotly = "*"
 
 [dev-packages]
 
