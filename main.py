@@ -1,119 +1,71 @@
-import itertools as iter
 import pygad
-from dataclasses import dataclass
+from operator import attrgetter
 from alive_progress import alive_bar
+from configs import TASKS, CONSTANTS, CONFIGS
+from task_types import Priority
 
 
-@dataclass
-class Task:
-    name: str
-    capable_resources: set[int]
-    duration: int
+def get_total(chromosome, key):
+    values = [key(task)
+              for id, task in enumerate(TASKS) if chromosome[id] == 1]
+    return sum(values)
 
 
-@dataclass
-class Step:
-    position: int
-    task_num: int
-    resource_num: int
+def total_duration(chromosome):
+    return get_total(chromosome, key=attrgetter("duration"))
 
 
-RESOURCES = {
-    1: "Desarrollador Senior",
-    2: "Desarrollador Semi-Senior",
-    3: "Desarrollador Junior"
-}
+def total_value(chromosome):
+    return get_total(chromosome, key=attrgetter("value"))
 
 
-TASKS = {
-    1: Task(name="Centrar DIV", duration=10, capable_resources=set([1, 2, 3])),
-    2: Task(name="Hacer Pantalla de Login", duration=4, capable_resources=set([1, 2])),
-    3: Task(name="Hacer Pantalla Home", duration=8, capable_resources=set([1, 2])),
-    4: Task(name="Hacer Deploy", duration=4, capable_resources=set([1]))
-}
+def total_priority(chromosome):
+    return get_total(chromosome, key=attrgetter("priority"))
 
 
-def is_valid_resource(resource_num):
-    return resource_num in range(1, len(RESOURCES) + 1)
+def fitness(_, chromosome, __):
+    normalized_duration = total_duration(chromosome) \
+        / CONSTANTS["MAX_DURATION"]
+    if normalized_duration >= 1:
+        return 0
 
+    normalized_value = total_value(chromosome) / sum([t.value
+                                                      for t in TASKS])
 
-def is_valid_task(task_num):
-    return task_num in range(1, len(TASKS) + 1)
+    normalized_priority = total_priority(chromosome) / sum([p.value
+                                                            for p in Priority])
 
-
-def is_valid_step(step: Step):
-    return is_valid_task(step.task_num) and \
-        is_valid_resource(step.resource_num) and \
-        set([step.resource_num]).issubset(TASKS[step.task_num].capable_resources)
-
-
-def is_valid_solution(solution):
-    return all(map(is_valid_step, solution))
-
-
-def get_steps(chromosome):
-    # Group chromosome elements in groups of gene_size.
-    gene_size = 2
-    genes = [chromosome[i:i+gene_size]
-             for i in range(0, len(chromosome), gene_size)]
-
-    return [Step(position=gene[0], task_num=i, resource_num=gene[1])
-            for i, gene in enumerate(genes, start=1)]
-
-
-def fitness(ga, chromosome, solution_idx):
-    solution = get_steps(chromosome)
-    # Penalize invalid solutions
-    if not is_valid_solution(solution):
-        return 1 / 999999
-
-    resource_is_free_time = {resource_num: 0 for resource_num in RESOURCES.keys()}
-    step_end_times = []
-    for step in solution:
-        step_end_time = resource_is_free_time[step.resource_num] + TASKS[step.task_num].duration
-        resource_is_free_time[step.resource_num] = step_end_time
-        step_end_times.append(step_end_time)
-
-    return 1 / max(step_end_times)
+    return CONSTANTS["K_PRIORITY"] * normalized_priority + \
+        normalized_value - CONSTANTS["VALUE_TIME_COST"] * normalized_duration
 
 
 def main():
-    # Configuration
-    config = {
-        "num_generations": 200,
-        "num_parents_mating": 100,
-        "sol_per_pop": 1000,  # Population size
-        "num_genes": len(TASKS) * 2,
-        "parent_selection_type": "tournament",
-        "mutation_type": "random",
-        "mutation_probability": 0.05,
-        "init_range_low": 1,
-        "init_range_high": max(len(TASKS), len(RESOURCES))
-    }
+    for name, config in CONFIGS.items():
+        print("Config Name:", name)
+        with alive_bar(config["num_generations"]) as bar:
+            # Instance GA
+            ga = pygad.GA(**config,
+                          gene_type=int,
+                          fitness_func=fitness,
+                          on_generation=lambda _: bar())
 
-    with alive_bar(config["num_generations"]) as bar:
-        # Instance GA
-        ga = pygad.GA(**config,
-                      gene_type=int,
-                      fitness_func=fitness,
-                      on_generation=lambda _: bar())
+            # Run the algorithm.
+            ga.run()
 
-        # Run the algorithm.
-        ga.run()
+        # Returning the details of the best solution
+        solution, solution_fitness, _ = ga.best_solution()
 
-    # Returning the details of the best solution
-    solution, solution_fitness, _ = ga.best_solution()
-    print("Best:", solution, "Time:", 1 / solution_fitness)
+        print("Best:", solution, "Score:", solution_fitness)
+        print("Total Duration:", total_duration(solution))
+        print("Total Value:", total_value(solution))
+        print("Priority Score:", total_priority(solution))
 
-    steps = sorted(get_steps(solution), key=lambda step: step.position)
-    step_groups = iter.groupby(steps, lambda step: step.position)
-    print("Solution:")
-    for pos, group in step_groups:
-        step_descs = [f"{TASKS[step.task_num].name} ({RESOURCES[step.resource_num]})" for step in group]
-        description = " and ".join(step_descs)
-        print(f"{pos}. {description}")
+        solution_names = [f"- {task.name}"
+                          for id, task in enumerate(TASKS)
+                          if solution[id] == 1]
 
-    # ga.plot_fitness()
+        print("Solution Tasks:")
+        print("\n".join(solution_names))
 
 
 if __name__ == "__main__":
