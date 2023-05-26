@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 
 class Priority(enum.IntEnum):
-    LOW = 0
-    MEDIUM = 1
-    HIGH = 2
-    CRITICAL = 3
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    CRITICAL = 4
 
 
 @dataclass

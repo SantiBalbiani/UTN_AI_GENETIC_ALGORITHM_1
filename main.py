@@ -1,4 +1,5 @@
 import pygad
+import matplotlib.pyplot as plt
 from operator import attrgetter
 from alive_progress import alive_bar
 from configs import TASKS, CONSTANTS, CONFIGS
@@ -51,6 +52,7 @@ def main():
 
             # Run the algorithm.
             ga.run()
+            ga.plot_fitness()
 
         # Returning the details of the best solution
         solution, solution_fitness, _ = ga.best_solution()
