@@ -8,11 +8,12 @@ class Config:
         RANDOM = "RANDOM"  # Random Binomial Crossover
         SINGLE_POINT = "SINGLE_POINT"  # Simple Crossover
         MASK = "MASK"  # Binomial Two-Point Crossover / Double Mask
-        self.CROSSOVER_FUNCTION = RANDOM
-        self.MASK_FIRST_CHILD = "XXYYXYXYXYXYXY"
-        self.MASK_SECOND_CHILD = "YYXXYXYXYXYXYX"
+        self.CROSSOVER_FUNCTION = SINGLE_POINT
+        self.MASK_FIRST_CHILD = "XXYYXYXYXYXXYYXYXYXYXXYYXYXYXY"
+        self.MASK_SECOND_CHILD = "YYXXYXYXYXYYXXYXYXYXYYXXYXYXYX"
         ROULETTE = "ROULETTE"
-        self.SELECTION_FUNCTION = ROULETTE
+        TOURNAMENT = "TOURNAMENT"
+        self.SELECTION_FUNCTION = TOURNAMENT
         self.MAX_SCORE = 99
 
 
