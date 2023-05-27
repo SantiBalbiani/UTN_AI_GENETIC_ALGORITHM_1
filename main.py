@@ -81,18 +81,20 @@ def select_individual_by_roulette(_population, fitness_function_sum):
 def execute_ga():
     population = get_initial_population()
     best = get_best_individual(population)
-    for gen_number in range(CONFIG.NUMBER_OF_GENERATIONS):
-        print("generación Nro: ", gen_number)
-        population = get_population_after_selection(population)
-        population = get_population_after_crossover(population)
-        population = get_population_after_mutation(population)
-        gen_best = get_best_individual(population)
-        solutions.append(gen_best.fitness())
-       # print(
-       #     f'The best individual of generation ${str(gen_number + 1)}: ${gen_best.print()} ')
-       # print(f' Fitness function value: ${str(gen_best.fitness())}')
-        if gen_best.fitness() > best.fitness():
-            best = gen_best
+    with alive_bar(CONFIG.NUMBER_OF_GENERATIONS) as bar:
+        for gen_number in range(CONFIG.NUMBER_OF_GENERATIONS):
+            print("generación Nro: ", gen_number)
+            population = get_population_after_selection(population)
+            population = get_population_after_crossover(population)
+            population = get_population_after_mutation(population)
+            gen_best = get_best_individual(population)
+            solutions.append(gen_best.fitness())
+            # print(
+            #     f'The best individual of generation ${str(gen_number + 1)}: ${gen_best.print()} ')
+            # print(f' Fitness function value: ${str(gen_best.fitness())}')
+            if gen_best.fitness() > best.fitness():
+                best = gen_best
+            bar()
     print("Best Fitness Value: ", best.fitness())
     print("Duración Total: ", get_total(best.chromosome, "task_durations"))
     print("Valor Total Agregado: ", get_total(best.chromosome, "earned_value"))
