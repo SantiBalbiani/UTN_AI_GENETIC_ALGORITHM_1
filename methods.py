@@ -6,8 +6,9 @@ from individual import Individual
 
 class Methods:
 
-    def select_population(old_population):
-        match CONFIG.SELECTION_FUNCTION:
+    def select_population(old_population, selection_method):
+        #match CONFIG.SELECTION_FUNCTION:
+        match selection_method:
             case "TOURNAMENT":
                 return Methods.select_population_by_tournament(old_population)
             case _:

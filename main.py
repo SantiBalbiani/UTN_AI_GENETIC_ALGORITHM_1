@@ -1,19 +1,23 @@
 from random import random
 from random import randint
 import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 from config import CONFIG
 from commons import Task
 from commons import tasks
-from commons import task_durations
-from commons import task_priorities
-from commons import task_earnedValues
-from commons import task_names
 from alive_progress import alive_bar
 from individual import Individual
 from methods import Methods
+from helper import Helper
 
+
+selection_methods = ["ROULETTE", "TOURNAMENT", "MASK"]
 solutions = []
-
+subgraphs_titles = []
+subgraph_x_values = [ x_value for x_value in range(0, CONFIG.NUMBER_OF_GENERATIONS)]
+subgraphs_x_values = []
+subgraphs_y_values = []
 
 def get_initial_population():
     _population = []
@@ -26,8 +30,8 @@ def get_best_individual(_population):
     return max(_population, key=lambda individual: individual.fitness())
 
 
-def get_population_after_selection(old_population):
-    return Methods.select_population(old_population)
+def get_population_after_selection(old_population, selection_method):
+    return Methods.select_population(old_population, selection_method)
 
 
 def get_population_after_crossover(old_population):
@@ -78,13 +82,13 @@ def select_individual_by_roulette(_population, fitness_function_sum):
             _index += 1
 
 
-def execute_ga():
+def execute_ga(selection_method):
     population = get_initial_population()
     best = get_best_individual(population)
     with alive_bar(CONFIG.NUMBER_OF_GENERATIONS) as bar:
         for gen_number in range(CONFIG.NUMBER_OF_GENERATIONS):
-            print("generación Nro: ", gen_number)
-            population = get_population_after_selection(population)
+            # print("generación Nro: ", gen_number)
+            population = get_population_after_selection(population, selection_method)
             population = get_population_after_crossover(population)
             population = get_population_after_mutation(population)
             gen_best = get_best_individual(population)
@@ -96,54 +100,39 @@ def execute_ga():
                 best = gen_best
             bar()
     print("Best Fitness Value: ", best.fitness())
-    print("Duración Total: ", get_total(best.chromosome, "task_durations"))
-    print("Valor Total Agregado: ", get_total(best.chromosome, "earned_value"))
-    print("Prioridad Final:", get_total(best.chromosome, "priorities"))
-    print("Tareas a realizar", get_names(best.get_chromosome()))
+    print("Duración Total: ", Helper.get_total(
+        best.chromosome, "task_durations"))
+    print("Valor Total Agregado: ", Helper.get_total(
+        best.chromosome, "earned_value"))
+    print("Prioridad Final:", Helper.get_total(best.chromosome, "priorities"))
+    print("Tareas a realizar", Helper.get_names(best.get_chromosome()))
     return (best.fitness(), best)
 
 
-def get_names(chromosomes):
-    task_names_final = []
-    for i, chromosome in enumerate(chromosomes):
-        if chromosome == 1:
-            task_names_final.append(task_names[i])
-    return task_names_final
 
+for idx, selection_method in enumerate(selection_methods):
+    print('Generando resultados para el método de selección ', selection_method)
+    (best_score, the_best) = execute_ga(selection_method)
 
-def get_total(chromosome, attribute):
-    task_final = []
-    match attribute:
-        case "task_durations":
-            for i, chromosome in enumerate(chromosome):
-                if chromosome == 1:
-                    task_final.append(task_durations[i])
-        case "earned_value":
-            for i, chromosome in enumerate(chromosome):
-                if chromosome == 1:
-                    task_final.append(task_earnedValues[i])
-        case "priorities":
-            for i, chromosome in enumerate(chromosome):
-                if chromosome == 1:
-                    task_final.append(task_priorities[i])
-        case _:
-            return None
-    return sum(task_final)
-
-
-(best_score, the_best) = execute_ga()
-
-graph_title = "Best score: " + str(best_score) \
-              + " - Generational leap: " + str(CONFIG.GENERATIONAL_LEAP) \
-              + " - Mutation probability: " + str(CONFIG.MUTATION_PROBABILITY) \
-              + " - Crossover function: " + CONFIG.CROSSOVER_FUNCTION \
-              + " - Selection function: " + CONFIG.SELECTION_FUNCTION \
-              + " \n Best Task Combination " + \
-    str(get_names(the_best.get_chromosome()))
-
-figure = px.line(x=range(0, CONFIG.NUMBER_OF_GENERATIONS),
-                 y=solutions, title=graph_title)
-
+    graph_title = selection_method + ", Score:" + str(round(best_score,2))
+    
+      #"Mejor Aptitud: " + str(best_score) \ 
+       # + " - Generational leap: " + str(CONFIG.GENERATIONAL_LEAP) \
+      #  + " - Mutation probability: " + str(CONFIG.MUTATION_PROBABILITY) \
+      #  + " - Crossover Method: " + CONFIG.CROSSOVER_FUNCTION \
+         
+        #  + " \n Best Task Combination " + \ str(get_names(the_best.get_chromosome()))
+    subgraphs_titles.append(graph_title)
+    subgraphs_y_values.append(solutions)
+    solutions = []
+print(subgraphs_titles)
+figure = make_subplots(rows=1, cols=len(selection_methods), subplot_titles=subgraphs_titles)
+for idx, selection_method in enumerate(selection_methods):
+    figure.add_trace(go.Scatter(x=subgraph_x_values, y=subgraphs_y_values[idx]), row=1, col=idx+1)
+        
+   # figure = px.line(x=range(0, CONFIG.NUMBER_OF_GENERATIONS),
+   #              y=solutions, title=graph_title)
+figure.update_layout(height=600, width=1300, title_text="Comparación de Métodos de Selección", showlegend=False)
 figure.show()
 
 # pipinstall alive-progress
