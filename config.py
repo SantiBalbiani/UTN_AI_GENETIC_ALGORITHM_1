@@ -1,10 +1,10 @@
 class Config:
     def __init__(self):
-        self.TIME_LIMIT = 500
-        self.POPULATION_SIZE = 100
-        self.GENERATIONAL_LEAP = 0.7
-        self.NUMBER_OF_GENERATIONS = 50
-        self.MUTATION_PROBABILITY = 0.7
+        self.TIME_LIMIT = 60
+        self.POPULATION_SIZE = 200
+        self.GENERATIONAL_LEAP = 0.5
+        self.NUMBER_OF_GENERATIONS = 200
+        self.MUTATION_PROBABILITY = 0.05
         RANDOM = "RANDOM"  # Random Binomial Crossover
         SINGLE_POINT = "SINGLE_POINT"  # Simple Crossover
         MASK = "MASK"  # Binomial Two-Point Crossover / Double Mask
