@@ -26,8 +26,8 @@ class Individual:
         total_value = 0
         total_priority = 0
 
-        #max_duration = max(task.taskDuration for task in tasks)
-        max_duration = CONFIG.TIME_LIMIT
+        max_duration = max(task.taskDuration for task in tasks)
+        #max_duration = CONFIG.TIME_LIMIT
         #max_priority = max(task.priority for task in tasks)
         max_priority = 4
         max_value = max(task.valueAdded for task in tasks)

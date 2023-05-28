@@ -11,8 +11,8 @@ from individual import Individual
 from methods import Methods
 from helper import Helper
 
-
-selection_methods = ["ROULETTE", "TOURNAMENT", "MASK"]
+title_text="Comparación de Métodos de Selección"
+selection_methods = ["ROULETTE", "TOURNAMENT"]
 solutions = []
 subgraphs_titles = []
 subgraph_x_values = [ x_value for x_value in range(0, CONFIG.NUMBER_OF_GENERATIONS)]
@@ -115,24 +115,26 @@ for idx, selection_method in enumerate(selection_methods):
     (best_score, the_best) = execute_ga(selection_method)
 
     graph_title = selection_method + ", Score:" + str(round(best_score,2))
-    
+    subgraphs_titles.append(graph_title)
+    subgraphs_y_values.append(solutions)
+    solutions = []
       #"Mejor Aptitud: " + str(best_score) \ 
        # + " - Generational leap: " + str(CONFIG.GENERATIONAL_LEAP) \
       #  + " - Mutation probability: " + str(CONFIG.MUTATION_PROBABILITY) \
       #  + " - Crossover Method: " + CONFIG.CROSSOVER_FUNCTION \
          
         #  + " \n Best Task Combination " + \ str(get_names(the_best.get_chromosome()))
-    subgraphs_titles.append(graph_title)
-    subgraphs_y_values.append(solutions)
-    solutions = []
-print(subgraphs_titles)
-figure = make_subplots(rows=1, cols=len(selection_methods), subplot_titles=subgraphs_titles)
+
+figure = make_subplots(rows=1, cols=len(
+        selection_methods), subplot_titles=subgraphs_titles)
 for idx, selection_method in enumerate(selection_methods):
-    figure.add_trace(go.Scatter(x=subgraph_x_values, y=subgraphs_y_values[idx]), row=1, col=idx+1)
-        
-   # figure = px.line(x=range(0, CONFIG.NUMBER_OF_GENERATIONS),
-   #              y=solutions, title=graph_title)
-figure.update_layout(height=600, width=1300, title_text="Comparación de Métodos de Selección", showlegend=False)
+        figure.add_trace(go.Scatter(x=subgraph_x_values,
+                            y=subgraphs_y_values[idx]), row=1, col=idx+1)
+
+figure.update_layout(
+        height=600, width=1300, title_text="Comparación de Métodos de Selección", showlegend=False)
 figure.show()
 
-# pipinstall alive-progress
+# Helper.graph(title_text, subgraphs_titles, selection_methods, subgraph_x_values, subgraphs_y_values )
+
+

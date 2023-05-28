@@ -49,3 +49,4 @@ for task in tasks:
     task_priorities.append(task.priority)
     task_earnedValues.append(task.valueAdded)
     task_names.append(task.name)
+
